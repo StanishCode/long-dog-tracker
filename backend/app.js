@@ -4,7 +4,7 @@ import express from "express";
 
 const app = express();
 
-app.use(express.static("backend/images"));
+app.use(express.static("images"));
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
@@ -16,10 +16,8 @@ app.use((req, res, next) => {
 });
 
 app.get("/user-found-longdogs", async (req, res) => {
-  const fileData = await fs.readFile("./backend/data/user-found-longdogs");
-
+  const fileData = await fs.readFile("./data/user-found-longdogs.json");
   const longDogs = JSON.parse(fileData);
-
   res.status(200).json({ longDogs });
 });
 
@@ -27,7 +25,7 @@ app.put("/user-found-longdogs", async (req, res) => {
   const longDogs = req.body.longDogs;
 
   await fs.writeFile(
-    "./backend/data/user-found-longdogs.json",
+    "./data/user-found-longdogs.json",
     JSON.stringify(longDogs)
   );
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import longDogImage from "./assets/Long_dog.webp";
 
 function App() {
   //TODO: Refactor states, some seem unnecessary
   const [numOfSeasons, setNumOfSeasons] = useState(0);
   const [currentSeason, setCurrentSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
+  const [foundLongDogs, setFoundLongDogs] = useState([]);
 
   useEffect(() => {
     async function fetchSeasons() {
@@ -23,31 +23,49 @@ function App() {
       );
       const data = await response.json();
       setEpisodes(data);
-      console.log(data);
     }
     fetchEpisode();
+
+    async function fetchFoundLongDogs() {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/user-found-longdogs"
+        );
+        const data = await response.json();
+        setFoundLongDogs(data.longDogs);
+      } catch (error) {
+        console.log("Could not fetch found longdogs", error);
+      }
+    }
+    fetchFoundLongDogs();
   }, []);
 
-  //TODO: create seasons dropdown handler and user input
+  function handleSeasonSelect(event) {
+    console.log(event.target.value);
+    setCurrentSeason(+event.target.value);
+  }
 
   const seasonOptions = [];
   for (let i = 1; i <= numOfSeasons; i++) {
-    seasonOptions.push(
-      <option key={i} value={`season-${i}`}>{`Season ${i}`}</option>
-    );
+    seasonOptions.push(<option key={i} value={i}>{`Season ${i}`}</option>);
   }
 
-  const filteredEpisodes = episodes.filter(
-    (episode) => episode.season === currentSeason
-  );
+  const filteredEpisodes = episodes.filter((episode) => {
+    return episode.season === currentSeason;
+  });
+
+  const findLongDogImages = (episode) => {
+    const currentLongDog = foundLongDogs.find((f) => f.name === episode.name);
+
+    return currentLongDog ? currentLongDog.found : [];
+  };
 
   //TODO: Finalize styles and layout for episode components
   return (
     <>
       <header className="m-2 p-2 flex justify-between">
         <h1 className="text-3xl font-bold">Long Dog Tracker</h1>
-        <select name="seasons" id="season-select">
-          <option value="">Please select a season</option>
+        <select onChange={handleSeasonSelect} name="seasons" id="season-select">
           {seasonOptions}
         </select>
       </header>
@@ -71,27 +89,17 @@ function App() {
                 </p>
               </div>
               <ul className="flex flex-wrap grow">
-                <li className="h-16 w-16 p-2">
-                  <img
-                    className="h-full w-full rounded"
-                    src={longDogImage}
-                    alt=""
-                  />
-                </li>
-                <li className="h-16 w-16 p-2">
-                  <img
-                    className="h-full w-full rounded"
-                    src={longDogImage}
-                    alt=""
-                  />
-                </li>
-                <li className="h-16 w-16 p-2">
-                  <img
-                    className="h-full w-full rounded"
-                    src={longDogImage}
-                    alt=""
-                  />
-                </li>
+                {findLongDogImages(episode).map((image) => (
+                  <li key={image} className="h-16 w-16 p-2">
+                    {
+                      <img
+                        className="h-full w-full rounded"
+                        src={`http://localhost:3000/${image}`}
+                        alt=""
+                      />
+                    }
+                  </li>
+                ))}
                 {/* TODO: create button for submitting found long dogs */}
               </ul>
             </li>
