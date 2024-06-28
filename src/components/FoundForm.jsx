@@ -1,14 +1,30 @@
-function FoundForm({ index, input, name, onUserSub, onUserInput }) {
+import { useState } from "react";
+
+function FoundForm({ index, name, onUserSub, onUserInput }) {
+  const [fileInput, setFileInput] = useState("");
+  const [image, setImage] = useState("");
+
+  function handleUserInput(input) {
+    setFileInput(input.value);
+    setImage(input.files[0]);
+  }
+
+  function handleInputSubmission() {
+    setFileInput("");
+    setImage("");
+  }
+
   return (
     <form
       onSubmit={(e) => {
-        onUserSub(e, name);
+        onUserSub(e, name, image);
+        handleInputSubmission();
       }}
       encType="multipart/form-data"
-      className="p-2 basis-full flex justify-start items-center gap-2"
+      className="p-2 basis-full flex justify-center items-center gap-2 md:justify-start"
     >
       <label
-        className="px-5 py-2 text-sm font-bold bg-green-500 rounded-full"
+        className="px-5 py-2 text-sm font-bold text-[#404066] bg-[#edcc6f] rounded-full cursor-pointer"
         htmlFor={`image-file-${index}`}
       >
         Found One!
@@ -20,12 +36,12 @@ function FoundForm({ index, input, name, onUserSub, onUserInput }) {
         id={`image-file-${index}`}
         capture="environment"
         accept="image/*"
-        onChange={(event) => onUserInput(event.target)}
+        onChange={(event) => handleUserInput(event.target)}
       />
       {/* TODO: make only selected form submit button render */}
-      {input !== "" && (
+      {fileInput !== "" && (
         <input
-          className="px-3 py-1 bg-red-500 rounded font-bold"
+          className="px-3 py-1 text-white bg-[#2b2c41] rounded font-bold"
           type="submit"
         />
       )}

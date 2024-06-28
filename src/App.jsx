@@ -7,8 +7,6 @@ function App() {
   const [currentSeason, setCurrentSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
   const [foundLongDogs, setFoundLongDogs] = useState([]);
-  const [fileInput, setFileInput] = useState("");
-  const [image, setImage] = useState("");
 
   useEffect(() => {
     async function fetchSeasons() {
@@ -55,13 +53,8 @@ function App() {
     setCurrentSeason(+event.target.value);
   }
 
-  function handleUserInput(input) {
-    setFileInput(input.value);
-    setImage(input.files[0]);
-  }
-
   //TODO: refactor form submission logic
-  async function handleUserSubmit(e, episodeName) {
+  async function handleUserSubmit(e, episodeName, image) {
     e.preventDefault();
 
     const alreadyFound = foundLongDogs.find((f) => f.name === episodeName);
@@ -103,9 +96,6 @@ function App() {
     } catch (error) {
       console.log("Could not send and update found longdog info", error);
     }
-
-    setFileInput("");
-    setImage("");
   }
 
   const seasonOptions = [];
@@ -119,9 +109,17 @@ function App() {
 
   return (
     <>
-      <header className="m-2 p-2 flex justify-between">
-        <h1 className="text-3xl font-bold">Long Dog Tracker</h1>
-        <select onChange={handleSeasonSelect} name="seasons" id="season-select">
+      {/* TODO: Keep looking into color palette */}
+      <header className="mx-2 mb-2 p-2 flex justify-between">
+        <h1 className="text-3xl text-[#2b2c41] font-extrabold">
+          Long Dog Tracker
+        </h1>
+        <select
+          onChange={handleSeasonSelect}
+          className="p-2 font-bold text-[#2b2c41] bg-[#88cafc] rounded"
+          name="seasons"
+          id="season-select"
+        >
           {seasonOptions}
         </select>
       </header>
@@ -133,8 +131,6 @@ function App() {
               curEpisode={episode}
               curIndex={index}
               found={foundLongDogs}
-              fInput={fileInput}
-              handleInput={handleUserInput}
               onUserSubmit={handleUserSubmit}
             />
           ))}
