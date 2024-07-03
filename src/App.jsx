@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import EpisodeItem from "./components/EpisodeItem";
+import { storage } from "./firebase";
+import { ref, uploadBytes } from "firebase/storage";
 
 function App() {
   //TODO: Refactor states, some may be unnecessary
   const [numOfSeasons, setNumOfSeasons] = useState(0);
   const [currentSeason, setCurrentSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
-  const [foundLongDogs, setFoundLongDogs] = useState([]);
 
   useEffect(() => {
     async function fetchSeasons() {
@@ -35,18 +36,18 @@ function App() {
     }
     fetchEpisode();
 
-    async function fetchFoundLongDogs() {
-      try {
-        const response = await fetch(
-          "http://localhost:3000/user-found-longdogs"
-        );
-        const data = await response.json();
-        setFoundLongDogs(data.longDogs);
-      } catch (error) {
-        console.log("Could not fetch found longdogs", error);
-      }
-    }
-    fetchFoundLongDogs();
+    // async function fetchFoundLongDogs() {
+    //   try {
+    //     const response = await fetch(
+    //       "https://longdog-backend.onrender.com/user-found-longdogs"
+    //     );
+    //     const data = await response.json();
+    //     setFoundLongDogs(data.longDogs);
+    //   } catch (error) {
+    //     console.log("Could not fetch found longdogs", error);
+    //   }
+    // }
+    // fetchFoundLongDogs();
   }, []);
 
   function handleSeasonSelect(event) {
@@ -57,45 +58,47 @@ function App() {
   async function handleUserSubmit(e, episodeName, image) {
     e.preventDefault();
 
-    const alreadyFound = foundLongDogs.find((f) => f.name === episodeName);
-    let updatedData = "";
+    const imageRef = ref(storage, `${episodeName}/${image.name + Date.now()}`);
+    await uploadBytes(imageRef, image);
+    // const alreadyFound = foundLongDogs.find((f) => f.name === episodeName);
+    // let updatedData = "";
 
-    if (!alreadyFound) {
-      updatedData = { name: episodeName, found: [image.name] };
-      setFoundLongDogs((prevState) => {
-        return [...prevState, { name: episodeName, found: [image.name] }];
-      });
-    } else {
-      alreadyFound.found.push(image.name);
-      setFoundLongDogs((prevState) => {
-        return [...prevState, alreadyFound];
-      });
-    }
+    // if (!alreadyFound) {
+    //   updatedData = { name: episodeName, found: [image.name] };
+    //   setFoundLongDogs((prevState) => {
+    //     return [...prevState, { name: episodeName, found: [image.name] }];
+    //   });
+    // } else {
+    //   alreadyFound.found.push(image.name);
+    //   setFoundLongDogs((prevState) => {
+    //     return [...prevState, alreadyFound];
+    //   });
+    // }
 
-    const longdogFormData = new FormData();
-    longdogFormData.append("image", image);
-    const allFoundLongDogs = [...foundLongDogs, updatedData];
+    // const longdogFormData = new FormData();
+    // longdogFormData.append("image", image);
+    // const allFoundLongDogs = [...foundLongDogs, updatedData];
 
-    try {
-      await fetch("http://localhost:3000/user-found-longdogs", {
-        method: "POST",
-        body: longdogFormData,
-      });
-    } catch (error) {
-      console.log("Could not send and update found longdog images", error);
-    }
+    // try {
+    //   await fetch("https://longdog-backend.onrender.com/user-found-longdogs", {
+    //     method: "POST",
+    //     body: longdogFormData,
+    //   });
+    // } catch (error) {
+    //   console.log("Could not send and update found longdog images", error);
+    // }
 
-    try {
-      await fetch("http://localhost:3000/user-found-longdogs", {
-        method: "PUT",
-        body: JSON.stringify({ allFoundLongDogs }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (error) {
-      console.log("Could not send and update found longdog info", error);
-    }
+    // try {
+    //   await fetch("https://longdog-backend.onrender.com/user-found-longdogs", {
+    //     method: "PUT",
+    //     body: JSON.stringify({ allFoundLongDogs }),
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.log("Could not send and update found longdog info", error);
+    // }
   }
 
   const seasonOptions = [];
@@ -130,7 +133,6 @@ function App() {
               key={episode.id}
               curEpisode={episode}
               curIndex={index}
-              found={foundLongDogs}
               onUserSubmit={handleUserSubmit}
             />
           ))}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function FoundForm({ index, name, onUserSub, onUserInput }) {
+function FoundForm({ index, name, onUserSub, afterSub }) {
   const [fileInput, setFileInput] = useState("");
   const [image, setImage] = useState("");
 
@@ -16,8 +16,9 @@ function FoundForm({ index, name, onUserSub, onUserInput }) {
 
   return (
     <form
-      onSubmit={(e) => {
-        onUserSub(e, name, image);
+      onSubmit={async (e) => {
+        await onUserSub(e, name, image);
+        await afterSub();
         handleInputSubmission();
       }}
       encType="multipart/form-data"

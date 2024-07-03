@@ -1,13 +1,40 @@
+import { useEffect, useState } from "react";
 import LongDogImage from "./LongDogImage";
 import FoundForm from "./FoundForm";
+import { storage } from "../firebase";
+import { ref, listAll, getDownloadURL } from "firebase/storage";
 
-function EpisodeItem({ curEpisode, curIndex, found, onUserSubmit }) {
+//TODO: must optimize loading performance and api calls
+function EpisodeItem({ curEpisode, curIndex, onUserSubmit }) {
+  const [foundLongDogs, setFoundLongDogs] = useState([]);
+  const foundLongdogList = ref(storage, `${curEpisode.name}/`);
+
+  useEffect(() => {
+    findLongDogImages();
+  }, []);
+
+  //TODO: Refactor ref list mapping for URLs
+  async function findLongDogImages() {
+    console.log("requesting longdog images!");
+    console.log(foundLongDogs);
+    const response = await listAll(foundLongdogList);
+
+    response.items.forEach((item) => {
+      getDownloadURL(item).then((url) => {
+        setFoundLongDogs((prev) => {
+          if (!prev.includes(url)) {
+            console.log("State changed!");
+            console.log(prev);
+            return [...prev, url];
+          }
+
+          return prev;
+        });
+      });
+    });
+  }
+
   //TODO: Refactor conditional rendering logic
-  const findLongDogImages = (episode) => {
-    const currentLongDog = found.find((f) => f.name === episode.name);
-
-    return currentLongDog ? currentLongDog.found : [];
-  };
 
   return (
     <li className="m-4 p-2 flex flex-wrap gap-4 rounded-lg bg-[#88cafc] md:flex-nowrap">
@@ -25,15 +52,16 @@ function EpisodeItem({ curEpisode, curIndex, found, onUserSubmit }) {
           {curEpisode.summary.replace("<p>", "").replace("</p>", "")}
         </p>
       </div>
-      {/* TODO: Look into betterimplementation for unique identifiers */}
+      {/* TODO: Refactor found longdog state update */}
       <ul className="flex flex-wrap grow md:basis-1/3">
-        {findLongDogImages(curEpisode).map((image) => (
-          <LongDogImage key={image} curImage={image} />
+        {foundLongDogs.map((imageURL) => (
+          <LongDogImage key={imageURL} curImage={imageURL} />
         ))}
         <FoundForm
           index={curIndex}
           name={curEpisode.name}
           onUserSub={onUserSubmit}
+          afterSub={findLongDogImages}
         />
       </ul>
     </li>
